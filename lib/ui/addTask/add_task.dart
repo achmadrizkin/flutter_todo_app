@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors, prefer_final_fields, unused_field
 
 import 'package:flutter/material.dart';
+import 'package:flutter_todo_app/models/task.dart';
+import 'package:flutter_todo_app/services/task_controller.dart';
 import 'package:flutter_todo_app/ui/addTask/widget/input_field.dart';
 import 'package:flutter_todo_app/ui/home/widget/button.dart';
 import 'package:flutter_todo_app/utils/color.dart';
@@ -30,6 +32,8 @@ class _AddTaskState extends State<AddTask> {
 
   TextEditingController _titleTextEditingController = TextEditingController();
   TextEditingController _noteTextEditingController = TextEditingController();
+
+  TaskController _taskController = Get.put(TaskController());
 
   @override
   Widget build(BuildContext context) {
@@ -240,6 +244,7 @@ class _AddTaskState extends State<AddTask> {
     if (_titleTextEditingController.text.isNotEmpty &&
         _noteTextEditingController.text.isNotEmpty) {
       // submit data to database
+      _addTaskToDB();
       Get.back();
     } else if (_titleTextEditingController.text.isEmpty ||
         _noteTextEditingController.text.isEmpty) {
@@ -248,7 +253,10 @@ class _AddTaskState extends State<AddTask> {
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.white,
           colorText: Get.isDarkMode ? Colors.black : Colors.black,
-          icon: Icon(Icons.warning, color: Get.isDarkMode ? Colors.black : Colors.black,));
+          icon: Icon(
+            Icons.warning,
+            color: Get.isDarkMode ? Colors.black : Colors.black,
+          ));
     }
   }
 
@@ -292,5 +300,23 @@ class _AddTaskState extends State<AddTask> {
             hour: int.parse(_startTime.split(":")[0]),
             minute: int.parse(_startTime.split(":")[1].split(" ")[0])),
         initialEntryMode: TimePickerEntryMode.input);
+  }
+
+  void _addTaskToDB() async {
+    // pass data -> model -> database
+    int value = await _taskController.addTask(
+      task: Task(
+        note: _noteTextEditingController.text,
+        title: _titleTextEditingController.text,
+        date: DateFormat.yMd().format(_selectedDate),
+        startTime: _startTime,
+        endTime: _endTime,
+        remind: _selectedRemind,
+        repeat: _selectedRepeat,
+        color: _selectedColor,
+        isCompleted: 0,
+      ),
+    );
+    print("My id is $value");
   }
 }
